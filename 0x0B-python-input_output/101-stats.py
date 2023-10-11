@@ -9,6 +9,7 @@ status_codes = [200, 301, 400, 401, 403, 404, 405, 500]
 total_size = 0
 status_code_counts = defaultdict(int)
 line_count = 0
+lines_buffer = []
 
 def print_metrics():
     print("Total file size: File size: {}".format(total_size))
@@ -31,7 +32,16 @@ for line in sys.stdin:
         total_size += file_size
         if status_code in status_codes:
             status_code_counts[status_code] += 1
+        lines_buffer.append(line)
 
     # Print metrics every 10 lines
     if line_count % 10 == 0:
         print_metrics()
+
+    # Handle CTRL+C interruption
+    if signal.getsignal(signal.SIGINT):
+        print_metrics()
+        lines_buffer = []
+
+# After interruption, print the final metrics
+print_metrics()
